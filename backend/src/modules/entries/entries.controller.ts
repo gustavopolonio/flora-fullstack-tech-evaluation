@@ -17,6 +17,30 @@ export async function getWord(
   }
 }
 
+export async function populateWordsTable(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
+  try {
+    const response = await fetch(
+      'https://raw.githubusercontent.com/dwyl/english-words/refs/heads/master/words_dictionary.json',
+    )
+    if (!response.ok) throw new Error('Could not download JSON file')
+
+    const words = await response.json()
+
+    await prisma.word.createMany({
+      data: Object.keys(words).map((word) => ({
+        word,
+      })),
+    })
+
+    return reply.send({ message: 'Words table populated successfully' })
+  } catch (err) {
+    console.log(err)
+  }
+}
+
 export async function saveWordAsFavorite(
   request: FastifyRequest<{ Params: SaveWordAsFavoriteInput }>,
   reply: FastifyReply,
