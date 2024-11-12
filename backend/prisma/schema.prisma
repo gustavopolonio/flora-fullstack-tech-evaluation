@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id         String     @id @default(uuid())
+  username   String     @unique
+  password   String
+  created_at DateTime   @default(now())
+  history    History[]
+  favorite   Favorite[]
+
+  @@map("users")
+}
+
+model Word {
+  id         String   @id @default(uuid())
+  word       String   @unique
+  created_at DateTime @default(now())
+
+  @@map("words")
+}
+
+model History {
+  id         String   @id @default(uuid())
+  user_id    String
+  word_id    String
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id])
+
+  @@map("histories")
+}
+
+model Favorite {
+  id         String   @id @default(uuid())
+  user_id    String
+  word_id    String
+  created_at DateTime @default(now())
+
+  user User @relation(fields: [user_id], references: [id])
+
+  @@map("favorites")
+}
