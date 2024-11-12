@@ -2,8 +2,8 @@ import fastify, { FastifyReply, FastifyRequest } from 'fastify'
 import fjwt, { FastifyJWT } from '@fastify/jwt'
 import fCookie from '@fastify/cookie'
 import { env } from './env'
-import { entriesRoutes } from './routes/entries'
 import { authRoutes } from './modules/auth/auth.route'
+import { entriesRoutes } from './modules/entries/entries.route'
 
 const server = fastify()
 

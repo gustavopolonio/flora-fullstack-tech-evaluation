@@ -1,12 +1,12 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
 import bcrypt from 'bcrypt'
-import { signinInput, signupInput } from './auth.schema'
+import { SigninInput, SignupInput } from './auth.schema'
 import { prisma } from '../../lib/prisma'
 
 const SALT_ROUNDS = 10
 
 export async function signup(
-  request: FastifyRequest<{ Body: signupInput }>,
+  request: FastifyRequest<{ Body: SignupInput }>,
   reply: FastifyReply,
 ) {
   const { name, email, password } = request.body
@@ -59,7 +59,7 @@ export async function signup(
 }
 
 export async function signin(
-  request: FastifyRequest<{ Body: signinInput }>,
+  request: FastifyRequest<{ Body: SigninInput }>,
   reply: FastifyReply,
 ) {
   const { email, password } = request.body
