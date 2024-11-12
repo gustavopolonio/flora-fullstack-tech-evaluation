@@ -3,8 +3,8 @@ import { env } from './env'
 
 const server = fastify()
 
-server.get('/ping', async () => {
-  return 'pong\n'
+server.get('/', () => {
+  return { message: 'English Dictionary' }
 })
 
 server
