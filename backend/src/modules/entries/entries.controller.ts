@@ -51,11 +51,7 @@ export async function getWords(
         skip: 1,
         cursor: { id: lastWord.id },
         orderBy: { word: 'asc' },
-        where: {
-          word: {
-            contains: search,
-          },
-        },
+        where,
       })
     ).length > 0
 
@@ -66,11 +62,7 @@ export async function getWords(
         skip: 1,
         cursor: { id: firstWord.id },
         orderBy: { word: 'asc' },
-        where: {
-          word: {
-            contains: search,
-          },
-        },
+        where,
       })
     ).length > 0
 
