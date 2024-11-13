@@ -7,3 +7,11 @@ const getUserHistorySchema = z.object({
 })
 
 export type GetUserHistoryInput = z.infer<typeof getUserHistorySchema>
+
+const getUserFavoriteSchema = z.object({
+  limit: z.string(),
+  cursor: z.string(),
+  direction: z.enum(['next', 'prev']),
+})
+
+export type GetUserFavoriteInput = z.infer<typeof getUserFavoriteSchema>

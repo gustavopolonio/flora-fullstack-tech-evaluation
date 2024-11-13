@@ -44,7 +44,6 @@ export async function getWords(
   const lastWord = words[words.length - 1]
 
   const hasNextPage =
-    words.length === Number(limit) &&
     (
       await prisma.word.findMany({
         take: 1,
