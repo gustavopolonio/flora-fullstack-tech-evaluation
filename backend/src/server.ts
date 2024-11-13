@@ -4,6 +4,7 @@ import fCookie from '@fastify/cookie'
 import { env } from './env'
 import { authRoutes } from './modules/auth/auth.route'
 import { entriesRoutes } from './modules/entries/entries.route'
+import { userRoutes } from './modules/user/user.route'
 
 const server = fastify()
 
@@ -47,6 +48,10 @@ server.register(entriesRoutes, {
 
 server.register(authRoutes, {
   prefix: '/auth',
+})
+
+server.register(userRoutes, {
+  prefix: '/user/me',
 })
 
 server
