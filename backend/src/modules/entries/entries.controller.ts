@@ -151,25 +151,41 @@ export async function saveWordAsFavorite(
   reply: FastifyReply,
 ) {
   const { word } = request.params
+  const user = request.user
 
-  const wordData = await prisma.word.findUnique({
-    where: {
-      word,
-    },
+  await prisma.$transaction(async (prisma) => {
+    const wordData = await prisma.word.findUnique({
+      where: {
+        word,
+      },
+    })
+
+    if (!wordData) {
+      return reply.status(400).send({ message: `Could not find word: ${word}` })
+    }
+
+    const favoriteAlreadyExists = await prisma.favorite.findUnique({
+      where: {
+        user_id_word_id: {
+          user_id: user.id,
+          word_id: wordData.id,
+        },
+      },
+    })
+
+    if (favoriteAlreadyExists) {
+      return reply
+        .status(400)
+        .send({ message: `Word: ${word} is already favorited` })
+    }
+
+    const favorite = await prisma.favorite.create({
+      data: {
+        user_id: user.id,
+        word_id: wordData.id,
+      },
+    })
+
+    return reply.send({ favoriteId: favorite.id })
   })
-
-  if (!wordData) {
-    return reply
-      .status(400)
-      .send({ message: `Could not favorite word: ${word}` })
-  }
-
-  const favorite = await prisma.favorite.create({
-    data: {
-      user_id: 'id_test',
-      word_id: wordData.id,
-    },
-  })
-
-  return { favoriteId: favorite.id }
 }
