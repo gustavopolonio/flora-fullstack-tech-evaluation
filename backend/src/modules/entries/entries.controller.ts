@@ -1,7 +1,89 @@
 import { FastifyReply, FastifyRequest } from 'fastify'
 import { api } from '../../lib/axios'
-import { GetWordInput, SaveWordAsFavoriteInput } from './entries.schema'
 import { prisma } from '../../lib/prisma'
+import {
+  GetWordInput,
+  GetWordsInput,
+  SaveWordAsFavoriteInput,
+} from './entries.schema'
+
+export async function getWords(
+  request: FastifyRequest<{ Querystring: GetWordsInput }>,
+) {
+  const { search, limit = 20, cursor, direction } = request.query
+
+  const where = {
+    word: {
+      contains: search,
+    },
+  }
+
+  const [words, wordsCount] = await prisma.$transaction([
+    prisma.word.findMany({
+      take: direction === 'prev' ? -Number(limit) : Number(limit),
+      where,
+      orderBy: {
+        word: 'asc',
+      },
+      ...(cursor
+        ? {
+            skip: 1,
+            cursor: {
+              id: cursor,
+            },
+          }
+        : {}),
+    }),
+    prisma.word.count({
+      where,
+    }),
+  ])
+
+  const firstWord = words[0]
+  const lastWord = words[words.length - 1]
+
+  const hasNextPage =
+    words.length === Number(limit) &&
+    (
+      await prisma.word.findMany({
+        take: 1,
+        skip: 1,
+        cursor: { id: lastWord.id },
+        orderBy: { word: 'asc' },
+        where: {
+          word: {
+            contains: search,
+          },
+        },
+      })
+    ).length > 0
+
+  const hasPreviousPage =
+    (
+      await prisma.word.findMany({
+        take: -1,
+        skip: 1,
+        cursor: { id: firstWord.id },
+        orderBy: { word: 'asc' },
+        where: {
+          word: {
+            contains: search,
+          },
+        },
+      })
+    ).length > 0
+
+  const wordsFormatted = words.map((item) => item.word)
+
+  return {
+    results: wordsFormatted,
+    totalDocs: wordsCount,
+    previous: firstWord.id,
+    next: lastWord.id,
+    hasNext: hasNextPage,
+    hasPrev: hasPreviousPage,
+  }
+}
 
 export async function getWord(
   request: FastifyRequest<{ Params: GetWordInput }>,
