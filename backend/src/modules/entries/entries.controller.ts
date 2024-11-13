@@ -108,12 +108,35 @@ export async function getWord(
           .send({ message: `Could not get word: ${word}` })
       }
 
-      await prisma.history.create({
-        data: {
-          user_id: user.id,
-          word_id: wordData.id,
+      const historyAlreadyExists = await prisma.history.findUnique({
+        where: {
+          user_id_word_id: {
+            user_id: user.id,
+            word_id: wordData.id,
+          },
         },
       })
+
+      if (historyAlreadyExists) {
+        await prisma.history.update({
+          where: {
+            user_id_word_id: {
+              user_id: user.id,
+              word_id: wordData.id,
+            },
+          },
+          data: {
+            created_at: new Date(),
+          },
+        })
+      } else {
+        await prisma.history.create({
+          data: {
+            user_id: user.id,
+            word_id: wordData.id,
+          },
+        })
+      }
     })
 
     return { data: response.data }
