@@ -42,7 +42,7 @@ server.get('/', () => {
 })
 
 server.register(entriesRoutes, {
-  prefix: '/entries',
+  prefix: '/entries/en',
 })
 
 server.register(authRoutes, {

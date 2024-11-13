@@ -15,8 +15,14 @@ const getWordSchema = z.object({
 
 export type GetWordInput = z.infer<typeof getWordSchema>
 
-const saveWordAsFavoritechema = z.object({
+const favoriteWordSchema = z.object({
   word: z.string(),
 })
 
-export type SaveWordAsFavoriteInput = z.infer<typeof saveWordAsFavoritechema>
+export type FavoriteWordInput = z.infer<typeof favoriteWordSchema>
+
+const unfavoriteWordSchema = z.object({
+  word: z.string(),
+})
+
+export type UnFavoriteWordInput = z.infer<typeof unfavoriteWordSchema>

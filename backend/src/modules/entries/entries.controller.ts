@@ -4,7 +4,8 @@ import { prisma } from '../../lib/prisma'
 import {
   GetWordInput,
   GetWordsInput,
-  SaveWordAsFavoriteInput,
+  FavoriteWordInput,
+  UnFavoriteWordInput,
 } from './entries.schema'
 
 export async function getWords(
@@ -169,8 +170,8 @@ export async function populateWordsTable(
   }
 }
 
-export async function saveWordAsFavorite(
-  request: FastifyRequest<{ Params: SaveWordAsFavoriteInput }>,
+export async function favoriteWord(
+  request: FastifyRequest<{ Params: FavoriteWordInput }>,
   reply: FastifyReply,
 ) {
   const { word } = request.params
@@ -210,5 +211,51 @@ export async function saveWordAsFavorite(
     })
 
     return reply.send({ favoriteId: favorite.id })
+  })
+}
+
+export async function unfavoriteWord(
+  request: FastifyRequest<{ Params: UnFavoriteWordInput }>,
+  reply: FastifyReply,
+) {
+  const { word } = request.params
+  const user = request.user
+
+  await prisma.$transaction(async (prisma) => {
+    const wordData = await prisma.word.findUnique({
+      where: {
+        word,
+      },
+    })
+
+    if (!wordData) {
+      return reply.status(400).send({ message: `Could not find word: ${word}` })
+    }
+
+    const favoriteAlreadyExists = await prisma.favorite.findUnique({
+      where: {
+        user_id_word_id: {
+          user_id: user.id,
+          word_id: wordData.id,
+        },
+      },
+    })
+
+    if (!favoriteAlreadyExists) {
+      return reply
+        .status(400)
+        .send({ message: `Word: ${word} isn't favorited` })
+    }
+
+    await prisma.favorite.delete({
+      where: {
+        user_id_word_id: {
+          user_id: user.id,
+          word_id: wordData.id,
+        },
+      },
+    })
+
+    return reply.status(204).send()
   })
 }
