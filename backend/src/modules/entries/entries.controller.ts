@@ -90,9 +90,32 @@ export async function getWord(
   reply: FastifyReply,
 ) {
   const { word } = request.params
+  const user = request.user
 
   try {
     const response = await api.get(word)
+
+    await prisma.$transaction(async (prisma) => {
+      const wordData = await prisma.word.findFirst({
+        where: {
+          word,
+        },
+      })
+
+      if (!wordData) {
+        return reply
+          .status(400)
+          .send({ message: `Could not get word: ${word}` })
+      }
+
+      await prisma.history.create({
+        data: {
+          user_id: user.id,
+          word_id: wordData.id,
+        },
+      })
+    })
+
     return { data: response.data }
   } catch (err) {
     return reply.status(400).send({ message: `Could not get word: ${word}` })
